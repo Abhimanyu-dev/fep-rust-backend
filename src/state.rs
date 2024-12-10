@@ -5,12 +5,14 @@ use std::env;
 pub struct State {
     pub pool: Pool<Postgres>,
     pub redis: Client,
+    pub jwt_secret_key: [u8; 32],
 }
 impl State {
     pub async fn create() -> State {
         State {
             pool: configure_db().await,
             redis: get_redis_client().await,
+            jwt_secret_key: b"abcdefghijklmnopqrstuvwxyzabcdef".to_owned(),
         }
     }
 }
