@@ -1,0 +1,10 @@
+[package]
+name = "fep-rust-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+poem = "3.1.5"
+poem-openapi = { version = "5.1.4", features = ["swagger-ui"] }
+sqlx = { version = "0.8.2", features = ["runtime-tokio", "postgres", "tls-rustls", "macros"] }
+tokio = { version = "1.42.0", features = ["rt-multi-thread", "macros"] }
