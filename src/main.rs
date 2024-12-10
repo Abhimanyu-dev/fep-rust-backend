@@ -1,12 +1,19 @@
+use dotenv::dotenv;
 use poem::{listener::TcpListener, Route, Server};
 use poem_openapi::{payload::PlainText, OpenApi, OpenApiService};
+use state::State;
+use tokio::sync::OnceCell;
+
 mod applications;
 mod auth;
 mod professor;
 mod project;
+mod state;
 mod student;
 
 struct Api;
+
+static STATE: OnceCell<State> = OnceCell::const_new();
 
 #[OpenApi]
 impl Api {
@@ -19,6 +26,11 @@ impl Api {
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
+    if let Err(err) = STATE.set(State::create().await) {
+        eprintln!("{}", err);
+    }
+
     let api_service = OpenApiService::new(
         (
             Api,

@@ -4,7 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+dotenv = "0.15.0"
+fred = "10.0.1"
 poem = "3.1.5"
 poem-openapi = { version = "5.1.4", features = ["swagger-ui"] }
+rand = "0.8.5"
 sqlx = { version = "0.8.2", features = ["runtime-tokio", "postgres", "tls-rustls", "macros"] }
 tokio = { version = "1.42.0", features = ["rt-multi-thread", "macros"] }
