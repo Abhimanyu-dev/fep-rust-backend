@@ -11,7 +11,7 @@ pub struct StudentAPI;
 #[derive(Object)]
 struct Student {
     email: String,
-    cpi: f32,
+    cpi: f64,
     branch: String,
     batch: u32,
     rollno: u32,
@@ -19,7 +19,7 @@ struct Student {
 
 #[derive(Object)]
 struct UpdateStudent {
-    cpi: Option<f32>,
+    cpi: Option<f64>,
     branch: Option<String>,
     batch: Option<u32>,
     rollno: Option<u32>,
@@ -38,7 +38,7 @@ impl StudentAPI {
         sqlx::query!(
             "insert into students(email,cpi,branch,batch,roll_no) values($1,$2,$3,$4,$5)",
             user.email,
-            user.cpi as f64,
+            user.cpi,
             user.branch,
             user.batch as i32,
             user.rollno as i32,
