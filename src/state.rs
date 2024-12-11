@@ -17,7 +17,8 @@ impl State {
     }
 }
 async fn get_redis_client() -> Client {
-    let config = Config::from_url("redis://localhost:6379").unwrap();
+    let url = env::var("REDIS_URL").expect("REDIS_URL not found");
+    let config = Config::from_url(&url).unwrap();
     let client = Client::new(config, None, None, None);
     client.init().await.expect("Connot connect to redis");
     client
