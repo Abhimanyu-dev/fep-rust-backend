@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  db:
+    image: docker.io/postgres
+    container_name: db-backend-test
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: fep
+    ports:
+      - 5432:5432
+    volumes:
+      - ./pgdata/:/var/lib/postgresql/data
+
+  adminer:
+    image: docker.io/adminer
+    container_name: adminer-backend-test
+    restart: always
+    ports:
+      - 8080:8080
+  redis:
+    image: docker.io/redis
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379

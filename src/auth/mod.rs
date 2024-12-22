@@ -1,19 +1,18 @@
+pub mod jwt;
 use crate::STATE;
 use argon2::{
     password_hash::{rand_core::OsRng, SaltString},
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
 };
 use chrono::{Duration, Utc};
-use fred::prelude::KeysInterface;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use fred::prelude::*;
+use jwt::{generate_token, Claims};
 use poem::{http::StatusCode, Error, Result};
 use poem_openapi::{
     payload::{Json, PlainText},
     Object, OpenApi,
 };
 use rand::Rng;
-use serde::{Deserialize, Serialize};
-use sqlx;
 
 pub struct AuthAPI;
 
@@ -41,7 +40,6 @@ struct Login {
     email: String,
     password: String,
 }
-
 fn generate_otp() -> u16 {
     let mut rng = rand::thread_rng();
     rng.gen_range(1000..=9999)
@@ -55,11 +53,6 @@ fn get_hash(passwd: &str) -> Result<String, Error> {
             Err(Error::from_status(StatusCode::INTERNAL_SERVER_ERROR))
         }
     }
-}
-#[derive(Serialize, Deserialize)]
-pub struct Claims {
-    pub email: String,
-    pub exp: usize,
 }
 
 async fn verify_otp(email: &str, otp: &str) -> Result<(), Error> {
@@ -81,17 +74,6 @@ async fn verify_otp(email: &str, otp: &str) -> Result<(), Error> {
     match real_otp == otp.to_string() {
         true => Ok(()),
         false => Err(Error::from_status(StatusCode::INTERNAL_SERVER_ERROR)),
-    }
-}
-
-fn generate_token(claims: Claims, jwt_secret_key: [u8; 32]) -> Result<String, StatusCode> {
-    match encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(&jwt_secret_key),
-    ) {
-        Ok(tok) => Ok(tok),
-        Err(_) => Err(StatusCode::UNAUTHORIZED),
     }
 }
 
@@ -159,13 +141,17 @@ impl AuthAPI {
                 return Err(Error::from_status(StatusCode::INTERNAL_SERVER_ERROR));
             }
         };
-        let s = sqlx::query!("select password from users where email = $1", user.email)
-            .fetch_one(&st.pool)
-            .await
-            .map_err(|_| Error::from_status(StatusCode::INTERNAL_SERVER_ERROR))?;
+        let s = sqlx::query!(
+            "select password,role_id from users where email = $1",
+            user.email
+        )
+        .fetch_one(&st.pool)
+        .await
+        .map_err(|_| StatusCode::PRECONDITION_FAILED)?;
 
         let claims = Claims {
             email: user.email.clone(),
+            role_id: s.role_id,
             exp: (Utc::now() + Duration::hours(24)).timestamp() as usize,
         };
         let token = generate_token(claims, st.jwt_secret_key)?;
@@ -174,7 +160,7 @@ impl AuthAPI {
         Ok(PlainText(token))
     }
 
-    #[oai(path = "/auth/user/:id", method = "put")]
+    #[oai(path = "/auth/user/:id", method = "delete")]
     async fn delete_user(&self, user: Json<ChangeUser>) -> Result<PlainText<&'static str>> {
         todo!()
     }

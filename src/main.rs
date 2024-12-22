@@ -45,7 +45,7 @@ async fn main() {
     )
     .server("http://localhost:3000");
 
-    let ui = api_service.swagger_ui();
+    let ui = api_service.openapi_explorer();
     let app = Route::new().nest("/", api_service).nest("/docs", ui);
 
     println!("Starting server!");
