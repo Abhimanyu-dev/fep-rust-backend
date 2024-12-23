@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "update students set cpi = $1,branch = $2, batch = $3, roll_no = $4 where email = $5",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Text",
+        "Int4",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "077851c2c45a257c0b943f8034e41f1ba7990e69d5333e1ff0974c99341fcc7f"
+}

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "update professors set institute = $1 where email = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c3c57b5d6d08033ebeb91f0287b1af226c97265a76d046fb3b18adb9ec26947b"
+}

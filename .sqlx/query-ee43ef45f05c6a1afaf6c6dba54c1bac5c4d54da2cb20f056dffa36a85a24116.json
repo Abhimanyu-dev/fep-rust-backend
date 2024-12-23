@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "select * from students where email=$1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "email",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "cpi",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 2,
+        "name": "branch",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "batch",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "roll_no",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ee43ef45f05c6a1afaf6c6dba54c1bac5c4d54da2cb20f056dffa36a85a24116"
+}

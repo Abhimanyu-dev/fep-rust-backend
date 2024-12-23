@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "insert into professors(email,institute) values($1,$2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "62f2bb40b5139109b9ae3763c07cf0b88e07095a47df263f5a85deb6fa42f831"
+}
