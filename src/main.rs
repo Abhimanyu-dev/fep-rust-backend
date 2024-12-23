@@ -45,16 +45,16 @@ async fn main() {
     )
     .server("http://localhost:3000");
 
-    let ui = api_service.openapi_explorer();
+    let ui = api_service.swagger_ui();
 
     let cors = Cors::new()
-        .allow_origin("http://localhost:3001")
+        .allow_origin("http://localhost:3000")
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"])
         .allow_headers(vec!["Authorization", "Content-type"])
         .allow_credentials(true);
 
     let app = Route::new()
-        .nest("/api", api_service)
+        .nest("/", api_service)
         .nest("/docs", ui)
         .with(cors);
 
