@@ -22,7 +22,7 @@ pub fn generate_token(claims: Claims, jwt_secret_key: [u8; 32]) -> Result<String
 }
 
 pub fn validate_creds(
-    token: String,
+    token: &str,
     email: Option<&str>,
     role_id: Option<i32>,
     key: [u8; 32],
@@ -43,9 +43,9 @@ pub fn validate_creds(
     }
 }
 
-pub fn decode_token(token: String, key: [u8; 32]) -> Result<Claims, StatusCode> {
+pub fn decode_token(token: &str, key: [u8; 32]) -> Result<Claims, StatusCode> {
     match decode::<Claims>(
-        &token,
+        token,
         &DecodingKey::from_secret(&key),
         &Validation::default(),
     ) {
