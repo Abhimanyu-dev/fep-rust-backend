@@ -12,6 +12,7 @@ jsonwebtoken = "9.3.0"
 poem = "3.1.5"
 poem-openapi = { version = "5.1.4", features = ["openapi-explorer"] }
 rand = "0.8.5"
+sea-query = { version = "0.32.1", features = ["derive", "backend-postgres"] }
 serde = "1.0.215"
 sqlx = { version = "0.8.2", features = ["runtime-tokio", "postgres", "tls-rustls", "macros"] }
 tokio = { version = "1.42.0", features = ["rt-multi-thread", "macros"] }

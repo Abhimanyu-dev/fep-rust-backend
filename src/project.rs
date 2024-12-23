@@ -66,6 +66,16 @@ impl ProjectAPI {
             .map_err(|_| StatusCode::NOT_FOUND)?;
         Ok(Json(projects))
     }
+    #[oai(path = "/project/by", method = "get")]
+    async fn get_projects_by(&self, by: Path<String>) -> Result<Json<Vec<Project>>> {
+        let st = STATE.get().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
+        let projects =
+            sqlx::query_as!(Project, "select * from projects where offered_by = $1", *by)
+                .fetch_all(&st.pool)
+                .await
+                .map_err(|_| StatusCode::NOT_FOUND)?;
+        Ok(Json(projects))
+    }
 
     #[oai(path = "/project/new", method = "post")]
     async fn create_proj(

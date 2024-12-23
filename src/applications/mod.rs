@@ -1,11 +1,18 @@
 use crate::{auth::jwt::*, utils::*};
-use poem::{http::StatusCode, web::Path, Result};
+use poem::{
+    http::StatusCode,
+    web::{Path, Query},
+    Result,
+};
 use poem_openapi::{
     param::Header,
     payload::{Json, PlainText},
     types::multipart::Upload,
     Multipart, Object, OpenApi,
 };
+use search::{build_search_query, Filter};
+use sqlx::Row;
+mod search;
 
 pub struct ApplicationsAPI;
 #[derive(Object)]
@@ -38,14 +45,32 @@ struct UpdateStatus {
 
 #[OpenApi]
 impl ApplicationsAPI {
-    #[oai(path = "/applications/", method = "get")]
-    async fn get_app(&self, id: Path<i32>) -> Result<Json<Application>> {
+    #[oai(path = "/applications/:id", method = "get")]
+    async fn get_app(&self, Path(id): Path<i32>) -> Result<Json<Application>> {
         let st = get_state()?;
-        let project = sqlx::query_as!(Application, "select * from applications where id = $1", *id)
-            .fetch_one(&st.pool)
-            .await
-            .map_err(|_| StatusCode::NOT_FOUND)?;
-        Ok(Json(project))
+        let application =
+            sqlx::query_as!(Application, "select * from applications where id = $1", id)
+                .fetch_one(&st.pool)
+                .await
+                .map_err(|_| StatusCode::NOT_FOUND)?;
+        Ok(Json(application))
+    }
+
+    #[oai(path = "/applications/ids", method = "get")]
+    async fn get_app_ids(&self, Query(query): Query<Filter>) -> Result<Json<Vec<i32>>> {
+        let st = get_state()?;
+        let sql_query = build_search_query(query);
+        println!("{}", &sql_query);
+
+        match sqlx::query(&sql_query).fetch_all(&st.pool).await {
+            Ok(val) => Ok(Json(
+                val.into_iter().map(|row| row.get("apps_id")).collect(),
+            )),
+            Err(err) => {
+                eprintln!("{:?}", err);
+                Err(StatusCode::EXPECTATION_FAILED.into())
+            }
+        }
     }
 
     #[oai(path = "/project/application/apply", method = "post")]
@@ -72,7 +97,7 @@ impl ApplicationsAPI {
 
         Ok(PlainText("New Application Created"))
     }
-    #[oai(path = "/project/:id", method = "put")]
+    #[oai(path = "/application/:id", method = "put")]
     async fn update_app(
         &self,
         Header(Authorization): Header<String>,
