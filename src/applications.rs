@@ -1,5 +1,7 @@
-use poem::{web::Multipart, Result};
+use crate::{auth::jwt::*, utils::*};
+use poem::{http::StatusCode, web::Path, Result};
 use poem_openapi::{
+    param::Header,
     payload::{Json, PlainText},
     types::multipart::Upload,
     Multipart, Object, OpenApi,
@@ -8,56 +10,141 @@ use poem_openapi::{
 pub struct ApplicationsAPI;
 #[derive(Object)]
 struct Application {
-    id: u32,
-    offered_by: String,
-    project: u32,
+    id: i32,
+    project_id: i32,
+    student: String,
     note: String,
-    files: Option<String>,
+    file: String,
     status: String,
 }
 
 #[derive(Multipart)]
 struct NewApplication {
+    project_id: i32,
     note: String,
     file: Upload,
 }
 
 #[derive(Object)]
 struct UpdateApp {
-    id: u32,
+    id: i32,
     note: Option<String>,
 }
 #[derive(Object)]
 struct UpdateStatus {
-    status: Option<String>,
+    id: i32,
+    status: String,
 }
 
 #[OpenApi]
 impl ApplicationsAPI {
-    #[oai(path = "/applications/:id", method = "get")]
-    async fn get_project(&self) -> Result<Json<Application>> {
-        todo!()
-    }
-    #[oai(path = "/project/:id/applications", method = "get")]
-    async fn get_projects(&self) -> Result<Json<Vec<Application>>> {
-        todo!()
+    #[oai(path = "/applications/", method = "get")]
+    async fn get_app(&self, id: Path<i32>) -> Result<Json<Application>> {
+        let st = get_state()?;
+        let project = sqlx::query_as!(Application, "select * from applications where id = $1", *id)
+            .fetch_one(&st.pool)
+            .await
+            .map_err(|_| StatusCode::NOT_FOUND)?;
+        Ok(Json(project))
     }
 
-    #[oai(path = "/project/:id/application/apply", method = "post")]
-    async fn create_proj(&self, user: NewApplication) -> Result<PlainText<&'static str>> {
-        todo!()
+    #[oai(path = "/project/application/apply", method = "post")]
+    async fn create_app(
+        &self,
+        Header(Authorization): Header<String>,
+        new_app: NewApplication,
+    ) -> Result<PlainText<&'static str>> {
+        let st = get_state()?;
+        let creds = decode_token(&Authorization, st.jwt_secret_key)?;
+        validate_creds(&Authorization, None, Some(1), st.jwt_secret_key)?;
+        let name = random_string(10) + new_app.file.file_name().unwrap();
+        write_file(&name, &new_app.file.into_vec().await.unwrap()).await?;
+        sqlx::query!(
+            "insert into applications(project_id,student,note,file) values ($1,$2,$3,$4)",
+            new_app.project_id,
+            creds.email,
+            new_app.note,
+            name,
+        )
+        .execute(&st.pool)
+        .await
+        .map_err(|_| StatusCode::PRECONDITION_FAILED)?;
+
+        Ok(PlainText("New Application Created"))
     }
     #[oai(path = "/project/:id", method = "put")]
-    async fn update_proj(&self, user: Json<UpdateApp>) -> Result<PlainText<&'static str>> {
-        todo!()
+    async fn update_app(
+        &self,
+        Header(Authorization): Header<String>,
+        updates: Json<UpdateApp>,
+    ) -> Result<PlainText<&'static str>> {
+        let st = get_state()?;
+        let creds = decode_token(&Authorization, st.jwt_secret_key)?;
+        validate_creds(&Authorization, None, Some(1), st.jwt_secret_key)?;
+        sqlx::query!(
+            "update applications set note = $1 where id = $2 and student = $3",
+            updates.note.clone().unwrap(),
+            updates.id,
+            creds.email
+        )
+        .execute(&st.pool)
+        .await
+        .map_err(|_| StatusCode::PRECONDITION_FAILED)?;
+
+        Ok(PlainText("Application Updated"))
     }
 
-    #[oai(path = "/project/:id/status", method = "put")]
-    async fn update_status(&self, user: Json<UpdateStatus>) -> Result<PlainText<&'static str>> {
-        todo!()
+    #[oai(path = "/application/status", method = "put")]
+    async fn update_status(
+        &self,
+        Header(Authorization): Header<String>,
+        updates: Json<UpdateStatus>,
+    ) -> Result<PlainText<&'static str>> {
+        let st = get_state()?;
+        let creds = decode_token(&Authorization, st.jwt_secret_key)?;
+        let record  = sqlx::query!(
+            "select offered_by from applications inner join projects on applications.project_id = projects.id"
+        )
+        .fetch_one(&st.pool)
+        .await
+        .map_err(|_| StatusCode::PRECONDITION_FAILED)?;
+
+        validate_creds(
+            &Authorization,
+            Some(&record.offered_by),
+            Some(2),
+            st.jwt_secret_key,
+        )?;
+
+        sqlx::query!(
+            "update applications set status = $1 where id = $2",
+            &updates.status,
+            updates.id,
+        )
+        .execute(&st.pool)
+        .await
+        .map_err(|_| StatusCode::PRECONDITION_FAILED)?;
+
+        Ok(PlainText("Application Status Updated"))
     }
     #[oai(path = "/applications/:id", method = "delete")]
-    async fn delete_proj(&self) -> Result<PlainText<&'static str>> {
-        todo!()
+    async fn delete_app(
+        &self,
+        Header(Authorization): Header<String>,
+        id: Path<i32>,
+    ) -> Result<PlainText<&'static str>> {
+        let st = get_state()?;
+        let creds = decode_token(&Authorization, st.jwt_secret_key)?;
+        validate_creds(&Authorization, None, Some(1), st.jwt_secret_key)?;
+        sqlx::query!(
+            "delete from applications where id = $1 and student = $2",
+            *id,
+            creds.email
+        )
+        .execute(&st.pool)
+        .await
+        .map_err(|_| StatusCode::PRECONDITION_FAILED)?;
+
+        Ok(PlainText("Application Deleted"))
     }
 }

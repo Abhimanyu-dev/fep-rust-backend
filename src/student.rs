@@ -1,16 +1,18 @@
-use crate::STATE;
+use crate::{
+    auth::jwt::{decode_token, validate_creds},
+    utils::get_state,
+};
 use poem::{error::Error, http::StatusCode, Result};
 use poem_openapi::{
+    param::Header,
     payload::{Json, PlainText},
     Object, OpenApi,
 };
-use sqlx;
 
 pub struct StudentAPI;
 
 #[derive(Object)]
 struct Student {
-    email: String,
     cpi: f64,
     branch: String,
     batch: u32,
@@ -28,16 +30,17 @@ struct UpdateStudent {
 #[OpenApi]
 impl StudentAPI {
     #[oai(path = "/student/new", method = "post")]
-    async fn create_student(&self, user: Json<Student>) -> Result<PlainText<&'static str>> {
-        let st = match STATE.get() {
-            Some(val) => val,
-            None => {
-                return Err(Error::from_status(StatusCode::INTERNAL_SERVER_ERROR));
-            }
-        };
+    async fn create_student(
+        &self,
+        Header(Authorization): Header<String>,
+        user: Json<Student>,
+    ) -> Result<PlainText<&'static str>> {
+        let st = get_state()?;
+        let creds = decode_token(&Authorization, st.jwt_secret_key)?;
+        validate_creds(&Authorization, None, Some(1), st.jwt_secret_key)?;
         sqlx::query!(
             "insert into students(email,cpi,branch,batch,roll_no) values($1,$2,$3,$4,$5)",
-            user.email,
+            creds.email,
             user.cpi,
             user.branch,
             user.batch as i32,

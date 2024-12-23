@@ -1,5 +1,5 @@
 use dotenv::dotenv;
-use poem::{listener::TcpListener, middleware::Cors, Endpoint, EndpointExt, Route, Server};
+use poem::{listener::TcpListener, middleware::Cors, EndpointExt, Route, Server};
 use poem_openapi::{payload::PlainText, OpenApi, OpenApiService};
 use state::State;
 use tokio::sync::OnceCell;

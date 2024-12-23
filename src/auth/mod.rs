@@ -7,8 +7,9 @@ use argon2::{
 use chrono::{Duration, Utc};
 use fred::prelude::*;
 use jwt::{generate_token, Claims};
-use poem::{http::StatusCode, Error, Result};
+use poem::{http::StatusCode, web::Path, Error, Result};
 use poem_openapi::{
+    param::Header,
     payload::{Json, PlainText},
     Object, OpenApi,
 };
@@ -71,7 +72,7 @@ async fn verify_otp(email: &str, otp: &str) -> Result<(), Error> {
         Some(val) => val,
         None => return Err(Error::from_status(StatusCode::UNAUTHORIZED)),
     };
-    match real_otp == otp.to_string() {
+    match real_otp == otp {
         true => Ok(()),
         false => Err(Error::from_status(StatusCode::INTERNAL_SERVER_ERROR)),
     }
@@ -161,7 +162,11 @@ impl AuthAPI {
     }
 
     #[oai(path = "/auth/user/:id", method = "delete")]
-    async fn delete_user(&self, user: Json<ChangeUser>) -> Result<PlainText<&'static str>> {
+    async fn delete_user(
+        &self,
+        Header(Authorization): Header<String>,
+        id: Path<i32>,
+    ) -> Result<PlainText<&'static str>> {
         todo!()
     }
 }
