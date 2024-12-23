@@ -16,6 +16,7 @@ pub struct ProjectAPI;
 #[derive(Object)]
 struct Project {
     id: i32,
+    title: String,
     offered_by: String,
     description: String,
     img: Option<String>,
@@ -24,7 +25,7 @@ struct Project {
 
 #[derive(Object)]
 struct NewProject {
-    offered_by: String,
+    title: String,
     desc: String,
 }
 
@@ -70,19 +71,16 @@ impl ProjectAPI {
     async fn create_proj(
         &self,
         Header(Authorization): Header<String>,
-        user: Json<NewProject>,
+        project: Json<NewProject>,
     ) -> Result<PlainText<&'static str>> {
         let st = STATE.get().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
-        validate_creds(
-            &Authorization,
-            Some(&user.offered_by),
-            Some(2),
-            st.jwt_secret_key,
-        )?;
+        let creds = decode_token(&Authorization, st.jwt_secret_key)?;
+        validate_creds(&Authorization, None, Some(2), st.jwt_secret_key)?;
         sqlx::query!(
-            "insert into projects(offered_by,description) values ($1,$2)",
-            user.offered_by,
-            user.desc,
+            "insert into projects(title,description,offered_by) values ($1,$2,$3)",
+            project.title,
+            project.desc,
+            creds.email
         )
         .execute(&st.pool)
         .await
