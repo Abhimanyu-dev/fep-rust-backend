@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "update applications set status = $1 where id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8af9a92eb6bd2f01b367994ff310f2a22a6345b76026ca685427f7dbe73574c1"
+}

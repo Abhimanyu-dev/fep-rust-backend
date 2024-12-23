@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "update applications set note = $1 where id = $2 and student = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6f4d51d3356b4bbe813547226dc61b2a1dfe5b843ce3dfd98284f60215006e66"
+}
