@@ -15,16 +15,21 @@
       },
       {
         "ordinal": 2,
-        "name": "description",
+        "name": "title",
         "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "img",
+        "name": "description",
         "type_info": "Text"
       },
       {
         "ordinal": 4,
+        "name": "img",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
         "name": "files",
         "type_info": "Text"
       }
@@ -33,6 +38,7 @@
       "Left": []
     },
     "nullable": [
+      false,
       false,
       false,
       false,

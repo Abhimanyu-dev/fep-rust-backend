@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "select * from projects where id = $1",
+  "query": "select * from projects where offered_by = $1",
   "describe": {
     "columns": [
       {
@@ -36,7 +36,7 @@
     ],
     "parameters": {
       "Left": [
-        "Int4"
+        "Text"
       ]
     },
     "nullable": [
@@ -48,5 +48,5 @@
       true
     ]
   },
-  "hash": "2d551b983372c5c8a059a365632896eca5936672c078d941c8ccfc954deb50d0"
+  "hash": "6c404a67308a3c1d4442e16f30949b75d6cda383ce17729f139d5eb613520e9d"
 }
