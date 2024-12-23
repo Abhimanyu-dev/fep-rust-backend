@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "update projects set description = $1 where id = $2 and offered_by = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cdf1899c7a0727af634dacd837a6721e389afcd3865b7c000ac3ef1d9fd602f7"
+}

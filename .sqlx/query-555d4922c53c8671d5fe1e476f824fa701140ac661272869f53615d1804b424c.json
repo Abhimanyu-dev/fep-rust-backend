@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "select * from projects",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "offered_by",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "img",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "files",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "555d4922c53c8671d5fe1e476f824fa701140ac661272869f53615d1804b424c"
+}
