@@ -66,7 +66,7 @@ impl ProjectAPI {
             .map_err(|_| StatusCode::NOT_FOUND)?;
         Ok(Json(projects))
     }
-    #[oai(path = "/project/by", method = "get")]
+    #[oai(path = "/project/by/:by", method = "get")]
     async fn get_projects_by(&self, by: Path<String>) -> Result<Json<Vec<Project>>> {
         let st = STATE.get().ok_or(StatusCode::INTERNAL_SERVER_ERROR)?;
         let projects =
